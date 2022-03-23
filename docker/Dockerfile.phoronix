@@ -18,26 +18,23 @@ RUN phoronix-test-suite install pts/compress-7zip
 ####  INFO ####
     ########
 
+
 ### Configuration
+# Change graph visuals
+# /var/lib/phoronix-test-suite/graph-config.json
+
+# User config location
+# ~/.phoronix-test-suite/user-config.xml / (or if root, /etc/phoronix-test-suite.xml) files?
+
+
+### Running a benchmark with all sensors record values
+# MONITOR=all phoronix-test-suite run pts/compress-7zip
 
 # Test result location
 # /var/lib/phoronix-test-suite/test-results
 
-# Change graph visuals
-# /var/lib/phoronix-test-suite/graph-config.json
 
-# User Config location
-# ~/.phoronix-test-suite/user-config.xml / (or if root, /etc/phoronix-test-suite.xml) files?
-
-# Phoromatic config file (is also the user file)
-# /etc/phoronix-test-suite.xml
-
-
-# Monitors all available sensors while running 7zip benchmark
-# MONITOR=all phoronix-test-suite run pts/compress-7zip
-
-
-# Phoromatic Server
+### Phoromatic Server – Remote management and test orchestration system of the Phoronix Test Suite
 # Has dependency on sqlite (https://www.getastra.com/kb/knowledgebase/how-to-install-sqlite-for-php-on-my-apache-nginx-server/)
-# sudo apt-get install -y php7.4-sqlite
+# apt-get install -y php7.4-sqlite
 
