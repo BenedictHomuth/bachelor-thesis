@@ -1,0 +1,9 @@
+FROM golang:alpine3.14 as builder
+
+RUN go install go.k6.io/k6@latest
+
+FROM alpine
+COPY --from=builder go/bin/k6 usr/bin/k6
+WORKDIR /tests
+COPY ./k6 .
+ENTRYPOINT [ "../bin/sh" ]
