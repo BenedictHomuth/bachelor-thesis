@@ -19,24 +19,24 @@ provider "aws" {
 resource "aws_instance" "test_ec2_amd64" {
   ami                    = "ami-00e76d391403fc721" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
   instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.terraform_public.id, aws_security_group.webserver_public.id]
+  vpc_security_group_ids = [aws_security_group.terraform_public.id, aws_security_group.webserver_public.id, aws_security_group.kubernetes_public.id]
   key_name               = "terraform_test"
   user_data              = var.docker_setup
 
   tags = {
-    Name = "EC2 Test Instance amd64"
+    Name = "amd64 K8s Worker"
   }
 }
 
 resource "aws_instance" "test_ec2_arm64" {
   ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
   instance_type          = "t4g.micro"
-  vpc_security_group_ids = [aws_security_group.terraform_public.id]
+  vpc_security_group_ids = [aws_security_group.terraform_public.id, aws_security_group.webserver_public.id, aws_security_group.kubernetes_public.id]
   key_name               = "terraform_test"
   user_data              = var.docker_setup
 
   tags = {
-    Name = "EC2 Test Instance arm64"
+    Name = "arm64 K8s Master"
   }
 }
 
@@ -96,3 +96,58 @@ resource "aws_security_group_rule" "public_web_out" {
   security_group_id = aws_security_group.webserver_public.id
 }
 
+
+# Security group kubernetes
+resource "aws_security_group" "https_public" {
+  name        = "https_public"
+  description = "Allows for http connections on port 80"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_security_group_rule" "public_in_https" {
+  type        = "ingress"
+  from_port   = 443
+  to_port     = 443
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.https_public.id
+}
+
+resource "aws_security_group_rule" "public_https_out" {
+  type        = "egress"
+  from_port   = 0
+  to_port     = 0 
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.https_public.id
+}
+
+
+# Security group kubernetes
+resource "aws_security_group" "kubernetes_public" {
+  name        = "kubernetes_public"
+  description = "Allows for http connections on port 80"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_security_group_rule" "public_in_kubernetes" {
+  type        = "ingress"
+  from_port   = 6443
+  to_port     = 6443
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.kubernetes_public.id
+}
+
+resource "aws_security_group_rule" "public_kubernetes_out" {
+  type        = "egress"
+  from_port   = 0
+  to_port     = 0 
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.kubernetes_public.id
+}
