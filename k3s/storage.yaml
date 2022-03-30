@@ -1,0 +1,34 @@
+### DB local Storage
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: general-storage
+  namespace: app
+  labels:
+    type: local
+spec:
+  #kubectl get storageclass
+  storageClassName: hostpath
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/dbData"
+---
+
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-data-claim
+  namespace: app
+spec:
+  storageClassName: hostpath
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 900Mi
+
+---

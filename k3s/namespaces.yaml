@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: myapplication
+  name: app
   labels:
     author: ino-bh
   annotations:
