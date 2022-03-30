@@ -1,0 +1,3 @@
+FROM postgres
+LABEL org.opencontainers.image.source https://github.com/benedicthomuth/bachelor-thesis
+COPY ./db/schema.postgres.sql /docker-entrypoint-initdb.d

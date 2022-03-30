@@ -9,3 +9,5 @@ crash.*.log
 
 # General
 .DS_Store
+
+/k3s/login-to-ghcr.sh
