@@ -26,13 +26,10 @@ spec:
     spec:
       containers: 
       - name: pod-app-todo
-        image: goloroden/hello-world:latest
-        env:
-        - name: MESSAGE
-          value: Hello, User!
+        image: ghcr.io/benedicthomuth/bachelor-thesis/server:latest
         ports:
-        - name: app-http
-          containerPort: 3000
+        - name: server-port
+          containerPort: 8080
         resources:
           requests:
             cpu: "100m"
@@ -40,8 +37,8 @@ spec:
           limits:
             cpu: "150m"
             memory: "150Mi"
-      # imagePullSecrets:
-      # - name: github-cr
+      imagePullSecrets:
+      - name: github-cr
 
 --- 
 # Services in kubernetes are used to make persistent addresses to pods or a group of pods
@@ -56,9 +53,9 @@ spec:
   selector:
     app: todo
   ports:
-  - name: http
+  - name: server-port
     port: 80
-    targetPort: app-http # redirect incomping traffic (port 80) to one of the service managed pods which are running there app on port 3000
+    targetPort: server-port # redirect incomping traffic (port 80) to one of the service managed pods which are running there app on port 3000
     nodePort: 32323
   type: NodePort
 
@@ -92,7 +89,7 @@ spec:
     spec:
       containers: 
       - name: pod-database
-        image: postgres:14.2
+        image: ghcr.io/benedicthomuth/bachelor-thesis/database:latest
         env:
         - name: POSTGRES_DB
           value: todo-db
@@ -110,12 +107,27 @@ spec:
           limits:
             cpu: "150m"
             memory: "150Mi"
-      # imagePullSecrets:
-      # - name: github-cr
         volumeMounts:
         - name: db-data
           mountPath: /var/lib/postgresql/data
+      imagePullSecrets:
+        - name: github-cr
       volumes:
       - name: db-data
         persistentVolumeClaim: 
           claimName: db-data-claim
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: app
+spec:
+  selector:
+    app: database
+  ports:
+  - name: http
+    port: 5432
+    targetPort: postgres
