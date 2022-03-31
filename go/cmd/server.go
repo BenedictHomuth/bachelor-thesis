@@ -1,9 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+
+	_ "github.com/lib/pq"
 )
 
 func handleBasicRequest(w http.ResponseWriter, r *http.Request) {
@@ -11,6 +14,22 @@ func handleBasicRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	db, err := sql.Open("postgres", "host=postgres user=dbUser password=helloWorld! dbName=todo-db")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Successfully connected!")
+
+	//
+
 	http.HandleFunc("/", handleBasicRequest)
 
 	fmt.Printf("Starting server at port 8080\n")
