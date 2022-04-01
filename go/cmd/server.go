@@ -1,39 +1,22 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
-	"net/http"
-
-	_ "github.com/lib/pq"
+	"todo-app/api"
+	"todo-app/db"
 )
 
-func handleBasicRequest(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello!")
-}
+const (
+	host     = "10.43.91.88"
+	port     = "5432"
+	user     = "dbUser"
+	password = "helloWorld!"
+	dbname   = "todo-db"
+)
 
 func main() {
-
-	db, err := sql.Open("postgres", "host=postgres user=dbUser password=helloWorld! dbName=todo-db")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Successfully connected!")
-
-	//
-
-	http.HandleFunc("/", handleBasicRequest)
-
-	fmt.Printf("Starting server at port 8080\n")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal(err)
-	}
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	dbClient, _ := db.CreateConnection(psqlInfo)
+	srv := api.CreateAPI(dbClient)
+	srv.Start(":8080")
 }
