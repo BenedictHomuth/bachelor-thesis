@@ -2,19 +2,26 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"todo-app/api"
 	"todo-app/db"
 )
 
-const (
-	host     = "10.43.91.88"
-	port     = "5432"
-	user     = "dbUser"
-	password = "helloWorld!"
-	dbname   = "todo-db"
-)
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
+}
 
 func main() {
+	host := getEnv("DB_HOST", "postgres")
+	port := getEnv("DB_PORT", "5432")
+	dbname := getEnv("DB_NAME", "todo-db")
+	user := getEnv("DB_USER", "dbUser")
+	password := getEnv("DB_PW", "helloWorld!")
+
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	dbClient, _ := db.CreateConnection(psqlInfo)
 	srv := api.CreateAPI(dbClient)

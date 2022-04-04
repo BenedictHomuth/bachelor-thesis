@@ -14,12 +14,19 @@ type Todos struct {
 }
 
 func CreateTodo(con *sql.DB, todo Todos) (int64, error) {
-	result, err := con.Exec("INSERT INTO todos (title, description) VALUES ($1,$2)", todo.Title, todo.Description)
+	_, err := con.Exec("INSERT INTO todos (title, description) VALUES ($1,$2)", todo.Title, todo.Description)
 
 	if err != nil {
 		return -1, err
 	}
-	fmt.Println(result)
+	return 0, err
+}
+
+func UpdateTodo(con *sql.DB, todo Todos) (int64, error) {
+	_, err := con.Exec("UPDATE courses SET title = $1, description = $2 WHERE uid = $3", todo.Title, todo.Description, todo.Uid)
+	if err != nil {
+		return -1, err
+	}
 	return 0, err
 }
 
