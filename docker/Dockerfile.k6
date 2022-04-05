@@ -5,4 +5,5 @@ FROM alpine
 COPY --from=builder go/bin/k6 usr/bin/k6
 WORKDIR /tests
 COPY ./k6 .
-ENTRYPOINT [ "../bin/sh" ]
+# ENTRYPOINT [ "../bin/ash" ]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
