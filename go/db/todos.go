@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 type Todos struct {
@@ -23,7 +22,7 @@ func CreateTodo(con *sql.DB, todo Todos) (int64, error) {
 }
 
 func UpdateTodo(con *sql.DB, todo Todos) (int64, error) {
-	_, err := con.Exec("UPDATE courses SET title = $1, description = $2 WHERE uid = $3", todo.Title, todo.Description, todo.Uid)
+	_, err := con.Exec("UPDATE todos SET title = $1, description = $2 WHERE uid = $3", todo.Title, todo.Description, todo.Uid)
 	if err != nil {
 		return -1, err
 	}
@@ -66,7 +65,6 @@ func GetTodo(con *sql.DB, todoID string) (Todos, error) {
 	var updated_at string
 
 	err := con.QueryRow("SELECT * FROM todos WHERE uid = $1", todoID).Scan(&uid, &title, &description, &created_at, &updated_at)
-	fmt.Printf("Err: %s", err)
 	if err != nil {
 		return Todos{}, err
 	}

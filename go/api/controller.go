@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -32,9 +31,6 @@ func createTodo(c echo.Context) error {
 			"message": "Something went wrong while creating your todo! Please try again.",
 		})
 	}
-
-	fmt.Println(todo.Title, todo.Description)
-
 	statusCode, err := db.CreateTodo(dbCon, *todo)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
@@ -63,13 +59,46 @@ func getTodos(c echo.Context) error {
 
 func getTodo(c echo.Context) error {
 	qID := c.Param("uid")
-	fmt.Println(qID)
 	result, err := db.GetTodo(dbCon, qID)
 	if err != nil {
 		return c.JSON(http.StatusOK, "Your todo could not be retrieved! Please try again later.")
 	}
 
 	return c.JSON(http.StatusOK, result)
+}
+
+func updateTodo(c echo.Context) error {
+	qid := c.Param("uid")
+	todo := &db.Todos{}
+	defer c.Request().Body.Close()
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"err":     err.Error(),
+			"message": "Your query was insufficient! Please try again.",
+		})
+	}
+	err = json.Unmarshal(b, &todo)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error":   err.Error(),
+			"message": "Something went wrong while updating your todo! Please try again.",
+		})
+	}
+	todo.Uid = qid
+	statusCode, err := db.UpdateTodo(dbCon, *todo)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error":   err.Error(),
+			"message": "Your todo was not updated to the database. Please try again.",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message":    "Your todo was successfully updated!",
+		"statusCode": strconv.FormatInt(statusCode, 10),
+	})
+
 }
 
 func deleteTodo(c echo.Context) error {
@@ -98,6 +127,7 @@ func CreateAPI(con *sql.DB) *echo.Echo {
 	gt.POST("/create", createTodo)
 	gt.GET("/get", getTodos)
 	gt.GET("/get/:uid", getTodo)
+	gt.PUT("/update/:uid", updateTodo)
 	gt.DELETE("/delete/:uid", deleteTodo)
 
 	return e
