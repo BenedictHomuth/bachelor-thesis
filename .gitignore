@@ -11,3 +11,5 @@ crash.*.log
 .DS_Store
 
 /k3s/login-to-ghcr.sh
+/k3s/get-kube-config.sh
+/k3s/apply-everything.sh
