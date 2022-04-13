@@ -113,12 +113,19 @@ func deleteTodo(c echo.Context) error {
 	})
 }
 
+func healthCheck(c echo.Context) error {
+	return c.JSON(http.StatusOK, "Backend is reachable")
+}
+
 func CreateAPI(con *sql.DB) *echo.Echo {
 	dbCon = con
 
 	//// ECHO SETUP ////
 	e := echo.New()
 	e.Use(middleware.Logger())
+
+	//// HEALTH ////
+	e.GET("/health", healthCheck)
 
 	//// GROUPS ////
 	gt := e.Group("/todos")
