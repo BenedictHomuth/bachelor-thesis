@@ -100,36 +100,6 @@ resource "aws_iam_role_policy" "ssm_policy" {
   EOF
 }
 
-
-resource "aws_instance" "k3s-master" {
-  ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
-  instance_type          = "t4g.micro"
-  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
-  key_name               = "terraform_test"
-  user_data              = var.kubernetes_master_setup
-  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
-
-  tags = {
-    Name = "k3s-master"
-  }
-}
-
-resource "aws_instance" "k3s-worker" {
-  ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
-  instance_type          = "t4g.micro"
-  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
-  key_name               = "terraform_test"
-  user_data              = var.kubernetes_worker_setup
-  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
-
-  tags = {
-    Name = "k3s-worker"
-  }
-}
-
-
-
-
 ####
 ## SECURITY GROUPS
 ####
@@ -229,3 +199,42 @@ resource "aws_security_group" "allow_kubernetes" {
   }
 }
 
+
+resource "aws_instance" "k3s-master" {
+  ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
+  instance_type          = "t4g.micro"
+  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
+  key_name               = "terraform_test"
+  user_data              = var.kubernetes_master_setup
+  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
+
+  tags = {
+    Name = "k3s-master"
+  }
+}
+
+resource "aws_instance" "k3s-worker-one" {
+  ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
+  instance_type          = "t4g.micro"
+  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
+  key_name               = "terraform_test"
+  user_data              = var.kubernetes_worker_setup
+  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
+
+  tags = {
+    Name = "k3s-worker-one"
+  }
+}
+
+resource "aws_instance" "k3s-worker-two" {
+  ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
+  instance_type          = "t4g.micro"
+  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
+  key_name               = "terraform_test"
+  user_data              = var.kubernetes_worker_setup
+  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
+
+  tags = {
+    Name = "k3s-worker-two"
+  }
+}
