@@ -103,57 +103,65 @@ resource "aws_iam_role_policy" "ssm_policy" {
 ####
 ## SECURITY GROUPS
 ####
-resource "aws_security_group" "allow_http" {
-  name        = "allow_http"
-  description = "Allow HTTP inbound connections"
+resource "aws_security_group" "web_traffic" {
+  name        = "web_traffic"
+  description = "Allow HTTP and HTTPS inbound connections"
   vpc_id = var.vpc_id
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
   tags = {
-    Name = "Allow HTTP Security Group"
+    Name = "Web Traffic 80, 443"
   }
 }
 
-resource "aws_security_group" "allow_https" {
-  name        = "allow_https"
-  description = "Allow https connections"
+resource "aws_security_group_rule" "http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.web_traffic.id
+}
+
+resource "aws_security_group_rule" "https" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.web_traffic.id
+}
+
+resource "aws_security_group" "kubernetes" {
+  name        = "kubernetes_ports"
+  description = "Opens the required Kubernetes ports 6443 (kubectl), 8472 (flannel overlay network)"
   vpc_id = var.vpc_id
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
   tags = {
-    Name = "Allow https Security Group"
+    Name = "Kubernetes Ports"
   }
 }
 
-resource "aws_security_group" "allow_ssh" {
+resource "aws_security_group_rule" "kubectl" {
+  type              = "ingress"
+  from_port         = 6443
+  to_port           = 6443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.kubernetes.id
+}
+
+resource "aws_security_group_rule" "flannel_overlay_network" {
+  type              = "ingress"
+  from_port         = 8472
+  to_port           = 8472
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.kubernetes.id
+}
+
+resource "aws_security_group" "ssh" {
   name        = "allow_ssh"
-  description = "Allow ssh connections"
+  description = "Allow ssh connections on port 22"
   vpc_id = var.vpc_id
 
   ingress {
@@ -171,39 +179,18 @@ resource "aws_security_group" "allow_ssh" {
   }
 
   tags = {
-    Name = "Allow ssh Security Group"
+    Name = "SSH connection"
   }
 }
 
-resource "aws_security_group" "allow_kubernetes" {
-  name        = "allow_kubernetes"
-  description = "Allow tcp/6443 connections"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Allow k8s/tcp/6443 Security Group"
-  }
+locals {
+  nodeSecurityGroups = [aws_security_group.web_traffic.id, aws_security_group.kubernetes.id, aws_security_group.ssh.id]
 }
-
 
 resource "aws_instance" "k3s-master" {
   ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
   instance_type          = "t4g.micro"
-  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = local.nodeSecurityGroups
   key_name               = "terraform_test"
   user_data              = var.kubernetes_master_setup
   iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
@@ -216,7 +203,7 @@ resource "aws_instance" "k3s-master" {
 resource "aws_instance" "k3s-worker-one" {
   ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
   instance_type          = "t4g.micro"
-  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = local.nodeSecurityGroups
   key_name               = "terraform_test"
   user_data              = var.kubernetes_worker_setup
   iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
@@ -229,7 +216,7 @@ resource "aws_instance" "k3s-worker-one" {
 resource "aws_instance" "k3s-worker-two" {
   ami                    = "ami-0e7c558a3101e32ba" # Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
   instance_type          = "t4g.micro"
-  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_https.id, aws_security_group.allow_kubernetes.id, aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = local.nodeSecurityGroups
   key_name               = "terraform_test"
   user_data              = var.kubernetes_worker_setup
   iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
