@@ -15,104 +15,6 @@ resource "aws_route_table" "my_vpc_public" {
     }
 }
 
-# Security Group
-resource "aws_security_group" "asg_allow_http" {
-  name        = "asg_allow_http"
-  description = "Allow HTTP inbound connections"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Allow HTTP Security Group"
-  }
-}
-
-resource "aws_security_group" "asg_allow_https" {
-  name        = "asg_allow_https"
-  description = "Allow https connections"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Allow https Security Group"
-  }
-}
-
-resource "aws_security_group" "asg_allow_ssh" {
-  name        = "asg_allow_ssh"
-  description = "Allow ssh connections"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Allow ssh Security Group"
-  }
-}
-
-resource "aws_security_group" "asg_allow_kubernetes" {
-  name        = "asg_allow_kubernetes"
-  description = "Allow tcp/6443 connections"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Allow k8s/tcp/6443 Security Group"
-  }
-}
-
-
 resource "aws_launch_configuration" "worker" {
   name_prefix = var.lauch_config_name_prefix
 
@@ -120,7 +22,7 @@ resource "aws_launch_configuration" "worker" {
   instance_type = var.instance_type
   iam_instance_profile = var.iam_instance_profile
 
-  security_groups = [ aws_security_group.asg_allow_http.id, aws_security_group.asg_allow_https.id, aws_security_group.asg_allow_ssh.id, aws_security_group.asg_allow_kubernetes.id]
+  security_groups = var.vpc_sg_ids
   associate_public_ip_address = true
 
   user_data = var.user_data
@@ -164,10 +66,10 @@ resource "aws_elb" "loadbalancer" {
 
   health_check {
     healthy_threshold = 2
-    unhealthy_threshold = 10
+    unhealthy_threshold = 3
     timeout = 3
     interval = 300
-    target = "HTTP:80/"
+    target = "HTTP:80/health"
   }
 
   listener {

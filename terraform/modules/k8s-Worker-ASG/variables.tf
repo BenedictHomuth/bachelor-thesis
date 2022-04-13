@@ -16,6 +16,12 @@ variable "vpc_id" {
   default =  "vpc-068569df5cf25a092" # Standard vpc
 }
 
+variable "vpc_sg_ids"{
+  type = list(string)
+  description = "Specify the seucrity group ids, that the instance will use"
+  default = []
+}
+
 variable "internet_gateway" {
   type = string
   description = "ID of igw to use"
