@@ -28,7 +28,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: DB_HOST
-          value: 10.43.183.217
+          value: postgres
         ports:
         - name: server-port
           containerPort: 8080

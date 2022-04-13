@@ -7,21 +7,8 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: PathPrefix(`/api`)
+  - match: PathPrefix(`/`)
     kind: Rule
     services:
     - name: service-app
       port: 80
-    middlewares:
-      - name: strip-api-prefix
----
-# Strip the api prefix so the service behind the ingress sees .../... instead of .../api/....
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: strip-api-prefix
-  namespace: app
-spec:
-  stripPrefix:
-    prefixes:
-    - /api
