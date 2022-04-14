@@ -1,12 +1,12 @@
-output "sg_web"{
+output "web"{
     value = aws_security_group.web_traffic.id
 }
 
-output "sg_kubernetes"{
+output "kubernetes"{
     value = aws_security_group.kubernetes.id
 }
 
-output "sg_ssh"{
+output "ssh"{
     value = aws_security_group.ssh.id
 }
 

@@ -1,5 +1,5 @@
-output "load_balancer_worker_asg"{
-  value = module.worker-asg-pool-with-loadbalancer.elb_dns_name
+output "load_balancer_name"{
+  value = module.elb.elb_dns_name
 }
 
 output "ip_control_plane"{

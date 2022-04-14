@@ -20,27 +20,35 @@ module "security_groups" {
   source = "./modules/security-groups"
 }
 
-module "ssm_policies" {
-  source = "./modules/ssm"
+module "iam_policies" {
+  source = "./modules/iam"
+}
+
+module "elb" {
+  source = "./modules/elastic-load-balancer"
+  name = "k3s-load-balancer"
+  security_groups = [ module.security_groups.web, module.security_groups.outbound_traffic]
+  health_check_target = "HTTP:80/health"
 }
 
 locals {
-  security_groups =[ module.security_groups.sg_web, module.security_groups.sg_kubernetes, module.security_groups.sg_ssh, module.security_groups.outbound_traffic]
+  security_groups = [ module.security_groups.web, module.security_groups.kubernetes, module.security_groups.ssh, module.security_groups.outbound_traffic]
 }
 
 module "control_plane_k3s"{
   source = "./modules/k8s-Control-Plane"
   vpc_sg_ids = local.security_groups
+  iam_instance_profile = module.iam_policies.iam_policy
   user_data = var.kubernetes_control_plane_setup
-  iam_instance_profile = module.ssm_policies.ssm_parameter_policy
-  instance_name = "Controler"
+  instance_name = "k3s Control-Plane"
 }
 
-module "worker-asg-pool-with-loadbalancer" {
+module "worker-asg-pool" {
   source = "./modules/k8s-Worker-ASG"
-  user_data = var.kubernetes_worker_setup  
   vpc_sg_ids = local.security_groups
-  iam_instance_profile = module.ssm_policies.ssm_parameter_policy
+  iam_instance_profile = module.iam_policies.iam_policy
+  user_data = var.kubernetes_worker_setup
+  loadbalancer_id = [module.elb.loadbalancer_id]
 }
 
 

@@ -52,12 +52,6 @@ variable "user_data" {
   default = null
 }
 
-variable "elb_name" {
-  type = string
-  description = "Loadbalancer Name"
-  default = "Worker LB"
-}
-
 variable "asg_min_instances" {
   type = number
   description = "Minimum amount of instances in the auto scaling group"
@@ -85,5 +79,11 @@ variable "tag-name-asg" {
 variable "iam_instance_profile" {
   type = string
   description = "You can set instance 'iam' roles here"
+  default = null
+}
+
+variable "loadbalancer_id" {
+  type = list(string)
+  description = "The list of loadbalancers for the ASG"
   default = null
 }

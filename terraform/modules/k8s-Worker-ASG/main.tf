@@ -32,55 +32,6 @@ resource "aws_launch_configuration" "worker" {
   }
 }
 
-# Load Balancing
-resource "aws_security_group" "sg_elb_http" {
-  name        = "sg_elb_http"
-  description = "Allow HTTP traffic to instances through Elastic Load Balancer"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Allow HTTP through ELB Security Group"
-  }
-}
-
-resource "aws_elb" "loadbalancer" {
-  name = "worker-elb"
-  security_groups = [
-    aws_security_group.sg_elb_http.id
-  ]
-  availability_zones = var.availability_zones
-
-  health_check {
-    healthy_threshold = 2
-    unhealthy_threshold = 3
-    timeout = 3
-    interval = 300
-    target = "HTTP:80/health"
-  }
-
-  listener {
-    lb_port = 80
-    lb_protocol = "http"
-    instance_port = "80"
-    instance_protocol = "http"
-  }
-
-}
-
 resource "aws_autoscaling_group" "asg_worker" {
   name = "${aws_launch_configuration.worker.name}-asg"
   availability_zones = var.availability_zones
@@ -91,9 +42,7 @@ resource "aws_autoscaling_group" "asg_worker" {
   
   health_check_type    = "ELB"
   health_check_grace_period = 3000
-  load_balancers = [
-    aws_elb.loadbalancer.id
-  ]
+  load_balancers = var.loadbalancer_id
 
   launch_configuration = aws_launch_configuration.worker.name
 
