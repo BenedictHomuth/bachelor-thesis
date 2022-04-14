@@ -70,11 +70,6 @@ metadata:
 spec:
   serviceName: postgres
   replicas: 1
-  # strategy:
-  #   type: RollingUpdate
-  #   rollingUpdate:
-  #     maxSurge: 1
-  #     maxUnavailable: 0
   selector:
     matchLabels:
       app: database
@@ -88,6 +83,7 @@ spec:
       containers: 
       - name: pod-database
         image: ghcr.io/benedicthomuth/bachelor-thesis/database:latest
+        # image: postgres
         env:
         - name: POSTGRES_DB
           value: todo-db
@@ -95,6 +91,8 @@ spec:
           value: helloWorld!
         - name: POSTGRES_USER
           value: dbUser
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - name: postgres
           containerPort: 5432
@@ -106,16 +104,16 @@ spec:
             cpu: "900m"
             memory: "700Mi"
         volumeMounts:
-        - name: db-data
-          mountPath: /var/lib/postgresql/data
+         - mountPath: /var/lib/postgresql/data
+           name: postgresdb
       imagePullSecrets:
         - name: github-cr
       volumes:
-      - name: db-data
-        persistentVolumeClaim: 
-          claimName: db-data-claim
+        - name: postgresdb
+          persistentVolumeClaim:
+            claimName: ebs-pg-app-claim
 
---- 
+---
 
 apiVersion: v1
 kind: Service
