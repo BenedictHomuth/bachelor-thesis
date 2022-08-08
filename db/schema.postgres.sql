@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS todos (
 	updated_at timestamp NOT NULL DEFAULT now()
 );
 
- INSERT INTO todos (title, description) VALUES ('Today', 'Go shopping')
+ INSERT INTO todos (title, description) VALUES ('Today', 'Go shopping');
