@@ -83,7 +83,6 @@ spec:
       containers: 
       - name: pod-database
         image: ghcr.io/benedicthomuth/bachelor-thesis/database:latest
-        # image: postgres
         env:
         - name: POSTGRES_DB
           value: todo-db
