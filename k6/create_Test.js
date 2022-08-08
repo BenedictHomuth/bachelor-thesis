@@ -19,9 +19,7 @@ export default function(){
          headers: {
           'Content-Type': 'application/json',
          },
-     }
-    
-    //  Execution 
-      http.post(linkCreate, payload, params)
-      sleep(1)
+    }
+    http.post(linkCreate, payload, params)
+    sleep(1)
 }
