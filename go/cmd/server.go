@@ -24,6 +24,6 @@ func main() {
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	dbClient, _ := db.CreateConnection(psqlInfo)
-	srv := api.CreateAPI(dbClient)
+	srv := api.CreateAPI()
 	srv.Start(":8080")
 }

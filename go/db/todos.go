@@ -12,8 +12,14 @@ type Todos struct {
 	Updated_at  string `json:"updated_at"`
 }
 
-func CreateTodo(con *sql.DB, todo Todos) (int64, error) {
-	_, err := con.Exec("INSERT INTO todos (title, description) VALUES ($1,$2)", todo.Title, todo.Description)
+type Connection interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+}
+
+func (r Repository) Create(todo Todos) (int64, error) {
+	_, err := r.con.Exec("INSERT INTO todos (title, description) VALUES ($1,$2)", todo.Title, todo.Description)
 
 	if err != nil {
 		return -1, err
@@ -21,15 +27,15 @@ func CreateTodo(con *sql.DB, todo Todos) (int64, error) {
 	return 0, err
 }
 
-func UpdateTodo(con *sql.DB, todo Todos) (int64, error) {
-	_, err := con.Exec("UPDATE todos SET title = $1, description = $2 WHERE uid = $3", todo.Title, todo.Description, todo.Uid)
+func (r Repository) Update(todo Todos) (int64, error) {
+	_, err := r.con.Exec("UPDATE todos SET title = $1, description = $2 WHERE uid = $3", todo.Title, todo.Description, todo.Uid)
 	if err != nil {
 		return -1, err
 	}
 	return 0, err
 }
 
-func GetTodos(con *sql.DB) ([]Todos, error) {
+func (r Repository) GetAll() ([]Todos, error) {
 	var uid string
 	var title string
 	var description string
@@ -37,7 +43,7 @@ func GetTodos(con *sql.DB) ([]Todos, error) {
 	var created_at string
 	var todos []Todos
 
-	rows, err := con.Query("SELECT * FROM todos")
+	rows, err := r.con.Query("SELECT * FROM todos")
 	if err != nil {
 		return nil, err
 	}
@@ -57,14 +63,14 @@ func GetTodos(con *sql.DB) ([]Todos, error) {
 	return todos, nil
 }
 
-func GetTodo(con *sql.DB, todoID string) (Todos, error) {
+func (r Repository) Get(todoID string) (Todos, error) {
 	var uid string
 	var title string
 	var description string
 	var created_at string
 	var updated_at string
 
-	err := con.QueryRow("SELECT * FROM todos WHERE uid = $1", todoID).Scan(&uid, &title, &description, &created_at, &updated_at)
+	err := r.con.QueryRow("SELECT * FROM todos WHERE uid = $1", todoID).Scan(&uid, &title, &description, &created_at, &updated_at)
 	if err != nil {
 		return Todos{}, err
 	}
@@ -78,8 +84,8 @@ func GetTodo(con *sql.DB, todoID string) (Todos, error) {
 	return todo, nil
 }
 
-func DeleteTodo(con *sql.DB, todoID string) (int64, error) {
-	result, err := con.Exec("DELETE FROM todos WHERE uid = $1", todoID)
+func (r Repository) Delete(todoID string) (int64, error) {
+	result, err := r.con.Exec("DELETE FROM todos WHERE uid = $1", todoID)
 	if err != nil {
 		return -1, err
 	}
