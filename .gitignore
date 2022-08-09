@@ -9,6 +9,8 @@ crash.*.log
 
 # General
 .DS_Store
+# Intellij metadata
+.idea
 
 /k3s/login-to-ghcr.sh
 /k3s/get-kube-config.sh

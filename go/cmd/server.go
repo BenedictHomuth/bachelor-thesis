@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"todo-app/api"
 	"todo-app/db"
 )
@@ -23,7 +24,8 @@ func main() {
 	password := getEnv("DB_PW", "helloWorld!")
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	dbClient, _ := db.CreateConnection(psqlInfo)
-	srv := api.CreateAPI()
+	dbClient, _ := db.CreatePostgreSQLConnection(psqlInfo)
+	svc := api.NewService(db.NewRepository(dbClient))
+	srv := api.CreateAPI(svc)
 	srv.Start(":8080")
 }

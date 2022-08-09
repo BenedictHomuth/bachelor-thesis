@@ -1,4 +1,4 @@
-FROM golang:alpine3.15 as builder
+FROM golang:1.18 as builder
 WORKDIR /todo-app
 COPY /go/go.mod .
 COPY /go/go.sum .
@@ -13,4 +13,3 @@ FROM scratch
 LABEL org.opencontainers.image.source https://github.com/benedicthomuth/bachelor-thesis
 COPY --from=builder /todo-app/server/cmd/todo-server todo-server
 ENTRYPOINT [ "./todo-server" ]
-

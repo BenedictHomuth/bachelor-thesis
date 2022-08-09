@@ -22,7 +22,7 @@ services:
     image: test-server
     hostname: server
     environment:
-      DB_HOST: host.docker.internal
+      DB_HOST: postgresql
     ports:
       - 8080:8080
     networks:
@@ -42,5 +42,3 @@ services:
   #     - postgres
   #     - server
   #   restart: always
-  
-

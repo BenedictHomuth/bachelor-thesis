@@ -6,11 +6,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Repository struct {
-	con Connection
-}
-
-func CreateConnection(dsn string) (*sql.DB, error) {
+// CreatePostgreSQLConnection creates a PostgreSQL database connection
+func CreatePostgreSQLConnection(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
