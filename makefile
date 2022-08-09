@@ -1,5 +1,9 @@
 go-build:
-	docker build -t test-build -f docker/Dockerfile . 
+	docker build -t test-server -f docker/Dockerfile.server . 
+	docker build -t test-db -f docker/Dockerfile.postgres . 
+
+start-dev:
+	docker compose up
 
 terraform-plan:
 	cd terraform && terraform plan
