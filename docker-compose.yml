@@ -1,0 +1,46 @@
+version: "3.8"
+
+networks:
+  attractify:
+    name: attractify
+
+services:
+
+  postgres:
+    image: test-db
+    hostname: postgres
+    environment:
+      POSTGRES_DB: todo-db
+      POSTGRES_PASSWORD: helloWorld!
+      POSTGRES_USER: dbUser
+    networks:
+      - attractify
+    ports:
+      - 5432:5432
+
+  server:
+    image: test-server
+    hostname: server
+    environment:
+      DB_HOST: host.docker.internal
+    ports:
+      - 8080:8080
+    networks:
+      - attractify
+    depends_on:
+      - postgres
+    restart: always
+
+  # k6-test:
+  #   image: k6-test
+  #   hostname: k6-test
+  #   environment:
+  #     HOSTNAME: http://server:8080/todos
+  #   networks:
+  #     - attractify
+  #   depends_on:
+  #     - postgres
+  #     - server
+  #   restart: always
+  
+
