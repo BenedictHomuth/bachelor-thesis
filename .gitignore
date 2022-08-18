@@ -13,3 +13,5 @@ crash.*.log
 /k3s/login-to-ghcr.sh
 /k3s/get-kube-config.sh
 /k3s/apply-everything.sh
+/k3s/delete-everything.sh
+Cheatsheet.md
